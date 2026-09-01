@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weather Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;font-family:"DM Sans",sans-serif;color:#eef2f8;background:#070a10;overflow-x:hidden;transition:background .5s}
+body.clear{background:radial-gradient(circle at 15% 0%,rgba(104,144,255,.18),transparent 32%),radial-gradient(circle at 90% 12%,rgba(68,216,234,.08),transparent 28%),#070a10}
+body.rain{background:radial-gradient(circle at 25% 0%,rgba(71,111,172,.18),transparent 35%),linear-gradient(145deg,#050a12,#0b1420)}
+body.snow{background:radial-gradient(circle at 50% 0%,rgba(120,180,255,.17),transparent 34%),linear-gradient(145deg,#07111b,#0c1722)}
+body.cloud{background:radial-gradient(circle at 25% 0%,rgba(122,139,180,.12),transparent 33%),#0a0d13}
+:root{--muted:#8f98a8;--line:rgba(255,255,255,.09);--panel:rgba(17,21,31,.68);--accent:#8ca8ff;--cyan:#73deef}
+.top{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:15px 22px;background:rgba(7,10,16,.76);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.05)}
+.brand{font:600 20px "Space Grotesk";letter-spacing:-.03em;color:#f4f6fb}.brand i{font-style:normal;color:var(--accent)}
+.actions{display:flex;gap:8px}.btn{border:1px solid var(--line);background:rgba(255,255,255,.04);color:#dfe5ef;border-radius:10px;padding:9px 11px;font:600 11px "DM Sans";cursor:pointer}.btn:hover{border-color:rgba(140,168,255,.35);transform:translateY(-1px)}
+.page{width:min(calc(100% - 28px),1180px);margin:auto;padding:50px 0 70px}.heroHead{display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end}.eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8490a6}.heroHead h1{font:600 clamp(38px,6vw,59px)/1.02 "Space Grotesk";letter-spacing:-.05em;margin:9px 0}.sub{max-width:650px;color:var(--muted);font-size:13px}.search{position:relative;display:flex;align-items:center;gap:8px;padding:6px;background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:14px;min-width:min(440px,100%)}.search span{color:#77839a;padding-left:6px}.search input{flex:1;background:transparent;border:0;outline:0;color:#fff;padding:10px 2px;font:13px "DM Sans"}.search button{border:0;background:#edf2ff;color:#111722;border-radius:10px;padding:10px 13px;font:700 11px "DM Sans";cursor:pointer}.suggestions{display:none;position:absolute;top:55px;left:0;right:0;padding:5px;background:#10141d;border:1px solid var(--line);border-radius:12px;z-index:30}.suggestions.open{display:block}.suggestions button{display:block;width:100%;padding:10px;border:0;background:none;text-align:left;color:#c5cbd6;border-radius:8px;cursor:pointer;font:12px "DM Sans"}.suggestions button:hover{background:rgba(255,255,255,.05);color:#fff}.status{font-size:10px;color:#6e7788;margin:9px 0 0}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:26px}.card{background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(13px);box-shadow:0 18px 65px rgba(0,0,0,.2)}.card:hover{border-color:rgba(140,168,255,.17)}
+.current{position:relative;padding:25px;overflow:hidden}.current:after{content:"";position:absolute;right:-100px;top:-120px;width:270px;height:270px;border-radius:50%;background:rgba(140,168,255,.12);filter:blur(40px)}.current .icon{position:absolute;right:28px;top:24px;font-size:49px;filter:drop-shadow(0 15px 28px rgba(140,168,255,.25))}.place{font-size:14px;color:#c6ccd7}.temp{display:flex;align-items:flex-start;margin-top:6px}.deg{font:600 76px/.9 "Space Grotesk";letter-spacing:-.07em}.unit{font:500 27px/1.2 "Space Grotesk";color:#9ca5b4;margin-left:3px}.cond{font:500 18px "Space Grotesk";margin-top:12px}.feels{font-size:11px;color:#878f9f;margin-top:4px}.meta4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding-top:19px;margin-top:25px;border-top:1px solid rgba(255,255,255,.06)}.meta4 span,.sun span,.mini span,.detail span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#727c8d}.meta4 strong,.sun strong,.detail strong{display:block;margin-top:4px;font-size:12px;color:#dce2ea}.sun{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-top:21px}.sunline{height:5px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}.sunline b{display:block;height:100%;width:50%;background:linear-gradient(90deg,#7996ff,#67dff0);border-radius:99px}
+.insight{padding:22px}.title{display:flex;justify-content:space-between;align-items:start;font:500 16px "Space Grotesk"}.title small{font:400 9px "DM Sans";color:#6d7787}.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:17px}.stat{padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:12px}.stat span{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#737d8f}.stat strong{display:block;margin-top:5px;font-size:15px}.insightline{display:flex;gap:10px;margin-top:13px;padding:12px;border-radius:12px;background:rgba(140,168,255,.05);border:1px solid rgba(140,168,255,.11)}.insightline b{color:#9eb4ff}.insightline p{margin:0;font-size:11px;color:#b5bdc9}
+.section{padding:21px;margin-top:14px}.secHead{display:flex;justify-content:space-between;align-items:start}.secHead h2{font:500 22px "Space Grotesk";margin:5px 0 0}.chart{height:205px;margin-top:15px}.strip{display:flex;gap:7px;overflow:auto;margin-top:9px;padding-bottom:2px}.hour{min-width:72px;text-align:center;padding:10px 8px;border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.025);border-radius:11px}.hour small{font-size:9px;color:#737d8e}.hour div{margin:8px 0;font-size:17px}.hour strong{font-size:12px}.hour em{display:block;font-size:8px;color:#6d7685;font-style:normal;margin-top:4px}
+.two{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}.forecast{margin-top:11px}.frow{display:grid;grid-template-columns:70px 46px 1fr 64px;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.055)}.frow:last-child{border:0}.frow .day{font-size:11px}.frow .ico{font-size:22px}.frow .desc{font-size:10px;color:#838c9c}.frow .ftemp{text-align:right;font-size:12px}.frow .ftemp i{font-style:normal;color:#687181;margin-left:5px}
+.aq{padding-bottom:20px}.aqtop{display:flex;align-items:end;gap:13px;margin:24px 0 14px}.aqn{font:600 50px/.88 "Space Grotesk"}.aqtop p{margin:0;font-size:13px}.aqtop small{color:#70798b;font-size:9px}.meter{height:7px;border-radius:99px;background:linear-gradient(90deg,#78dfad,#edd36a,#ff8b79);overflow:hidden}.meter b{display:block;height:100%;width:15%;background:#0a0d13}.poll{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:17px}.poll div{padding:11px;border-radius:11px;background:rgba(255,255,255,.03)}.poll span{font-size:9px;color:#778092}.poll strong{float:right;font-size:11px}.poll small{display:block;font-size:8px;color:#616b7a;margin-top:5px}
+.detailGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-top:15px}.detail{padding:13px;border-radius:11px;background:rgba(255,255,255,.03)}footer{display:flex;justify-content:space-between;margin-top:25px;padding-top:18px;border-top:1px solid rgba(255,255,255,.055);font-size:10px;color:#616a79}
+.rain{position:fixed;inset:0;pointer-events:none;overflow:hidden;opacity:0;z-index:-1}.rain.on{opacity:.2}.drop{position:absolute;top:-50px;width:1px;height:80px;background:linear-gradient(transparent,#9db7e8);transform:rotate(12deg);animation:fall linear infinite}@keyframes fall{to{transform:translateY(120vh) rotate(12deg)}}
+@media(max-width:900px){.heroHead,.grid,.two{grid-template-columns:1fr}.search{min-width:0;width:100%}.detailGrid{grid-template-columns:repeat(3,1fr)}}@media(max-width:600px){.page{width:min(calc(100% - 18px),1180px);padding-top:35px}.top{padding:13px}.deg{font-size:64px}.meta4{grid-template-columns:1fr 1fr}.detailGrid{grid-template-columns:1fr 1fr}.frow{grid-template-columns:53px 40px 1fr 60px}footer{flex-direction:column;gap:7px}}
+
+/* Immersive live weather scene */
+.sky-scene{position:fixed;inset:0;pointer-events:none;z-index:-2;overflow:hidden;opacity:0;transition:opacity .65s ease}.sky-glow{position:absolute;width:54vw;height:54vw;right:-18vw;top:-18vw;border-radius:50%;background:radial-gradient(circle,rgba(255,220,122,.13),rgba(255,220,122,.03) 35%,transparent 68%);filter:blur(10px);transition:.7s}.sky-sun{position:absolute;right:10vw;top:12vh;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle,#fff9d6 0 27%,#ffd878 44%,rgba(255,216,120,.24) 67%,transparent 70%);box-shadow:0 0 55px rgba(255,215,125,.22);opacity:.95}.sky-moon{position:absolute;right:11vw;top:11vh;width:66px;height:66px;border-radius:50%;background:radial-gradient(circle at 34% 32%,#fbfcff 0 36%,#c8d2e8 68%,#9ea9c4 100%);box-shadow:0 0 38px rgba(207,220,255,.15);opacity:0}.sky-moon:after{content:"";position:absolute;width:57px;height:57px;right:-8px;top:-4px;border-radius:50%;background:#070a10}.sky-stars{position:absolute;inset:0;opacity:0;background-image:radial-gradient(circle,rgba(255,255,255,.72) 0 1px,transparent 1.5px);background-size:120px 110px;background-position:10px 30px}.sky-cloud{position:absolute;width:240px;height:68px;border-radius:70px;background:linear-gradient(180deg,rgba(221,231,246,.11),rgba(132,148,174,.035));opacity:0;box-shadow:0 18px 34px rgba(0,0,0,.08)}.sky-cloud:before,.sky-cloud:after{content:"";position:absolute;border-radius:50%;background:inherit}.sky-cloud:before{width:92px;height:92px;left:35px;top:-38px}.sky-cloud:after{width:112px;height:112px;left:100px;top:-52px}.cloud-a{top:18vh;left:-280px;animation:cloudmove 34s linear infinite}.cloud-b{top:34vh;left:-360px;animation:cloudmove 46s linear infinite reverse}@keyframes cloudmove{from{transform:translateX(0)}to{transform:translateX(150vw)}}
+.sky-rain{position:absolute;inset:0;opacity:0}.atmo-drop{position:absolute;top:-8vh;width:1px;height:90px;background:linear-gradient(transparent,rgba(173,205,241,.7));transform:rotate(12deg);animation:atmoFall linear infinite}@keyframes atmoFall{to{transform:translate(6vw,120vh) rotate(12deg)}}
+body.day .sky-scene{opacity:1}body.night .sky-scene{opacity:1}body.night .sky-sun{opacity:0}body.night .sky-moon{opacity:.86}body.night .sky-stars{opacity:.4;animation:twinkle 7s ease-in-out infinite alternate}@keyframes twinkle{to{opacity:.62;transform:translateY(2px)}}body.day.clear .sky-glow{opacity:1}body.cloud .sky-cloud,body.rain .sky-cloud{opacity:.7}body.rain .sky-cloud{opacity:.42}body.rain .sky-rain{opacity:.5}body.night.rain .sky-glow{opacity:.15}body.night.rain .sky-moon{opacity:.42}body.snow .sky-rain{opacity:.35}body.snow .sky-rain:before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,rgba(235,245,255,.75) 0 2px,transparent 3px);background-size:55px 60px;animation:snowDrift 12s linear infinite;opacity:.5}@keyframes snowDrift{from{transform:translateY(-30px) translateX(0)}to{transform:translateY(100px) translateX(28px)}}body.rain .sky-glow{opacity:.22}
+@media(max-width:700px){.sky-sun{right:7vw;top:10vh;width:68px;height:68px}.sky-moon{right:8vw;top:10vh;width:54px;height:54px}}
+
+
+
+/* Atmospheric scene v6 — layered 3D rain */
+.sky-scene{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;isolation:isolate;opacity:1}
+.sky-scene:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,7,12,.01),rgba(4,8,14,.07) 55%,rgba(4,8,14,.17));z-index:0}
+.sky-glow{position:absolute;width:58vw;height:58vw;right:-18vw;top:-20vw;border-radius:50%;background:radial-gradient(circle,rgba(255,221,130,.15),rgba(255,221,130,.045) 31%,transparent 71%);filter:blur(12px);opacity:.95;z-index:1;transition:.7s}
+.sky-sun{position:absolute;right:9vw;top:10vh;width:108px;height:108px;border-radius:50%;background:radial-gradient(circle at 50% 48%,#fffef5 0 25%,#fff1c6 39%,#ffd86d 55%,rgba(255,215,103,.17) 69%,transparent 75%);box-shadow:0 0 30px rgba(255,224,145,.32),0 0 100px rgba(255,198,88,.14);opacity:.93;z-index:2}
+.sky-sun:before{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(255,230,160,.12);box-shadow:0 0 0 8px rgba(255,226,142,.03),0 0 0 18px rgba(255,226,142,.015);animation:sunPulse 5.5s ease-in-out infinite}
+@keyframes sunPulse{50%{transform:scale(1.035);opacity:.72}}
+.sky-moon{position:absolute;right:9.7vw;top:9vh;width:86px;height:86px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#fff 0 12%,#eef3fa 18% 57%,#d4dce8 76%,#b7c2d1 100%);box-shadow:0 0 24px rgba(224,236,255,.16),0 0 70px rgba(184,211,255,.08);opacity:0;overflow:hidden;z-index:2}
+.sky-moon:after{content:"";position:absolute;width:104px;height:104px;right:-42px;top:-18px;border-radius:50%;background:#081019}
+.sky-moon:before{content:"";position:absolute;width:13px;height:13px;left:18px;top:25px;border-radius:50%;background:rgba(120,132,151,.13);box-shadow:23px 20px 0 3px rgba(120,132,151,.09),-4px 26px 0 1px rgba(120,132,151,.10),31px -8px 0 1px rgba(120,132,151,.08);z-index:2}
+.sky-stars{position:absolute;inset:0;opacity:0;z-index:1;background-image:radial-gradient(circle at 18% 22%,rgba(255,255,255,.72) 0 1px,transparent 1.7px),radial-gradient(circle at 68% 18%,rgba(202,225,255,.48) 0 1px,transparent 1.7px),radial-gradient(circle at 83% 42%,rgba(255,255,255,.58) 0 1px,transparent 1.6px),radial-gradient(circle at 36% 62%,rgba(185,213,255,.34) 0 1px,transparent 1.6px);background-size:260px 210px,330px 280px,420px 330px,510px 360px}
+.sky-cloud{position:absolute;width:360px;height:98px;border-radius:90px;background:linear-gradient(180deg,rgba(235,243,252,.29),rgba(171,190,216,.10));border:1px solid rgba(231,239,250,.09);filter:drop-shadow(0 18px 34px rgba(0,0,0,.20));opacity:0;z-index:2}
+.sky-cloud:before,.sky-cloud:after{content:"";position:absolute;border-radius:50%;background:inherit;border:inherit}
+.sky-cloud:before{width:135px;height:135px;left:48px;top:-57px}.sky-cloud:after{width:165px;height:165px;left:148px;top:-78px}
+.cloud-a{top:16vh;left:-420px;animation:cloudmove 31s linear infinite}.cloud-b{top:34vh;left:-520px;animation:cloudmove 44s linear infinite reverse}
+@keyframes cloudmove{from{transform:translateX(0)}to{transform:translateX(155vw)}}
+
+.sky-rain{position:absolute;inset:0;overflow:hidden;opacity:0;z-index:2;perspective:900px}
+.rain-layer{position:absolute;inset:-20vh -10vw;transform-style:preserve-3d}
+.rain-far{filter:blur(1.1px);opacity:.30;transform:translateZ(-260px) scale(1.35)}
+.rain-mid{opacity:.55;transform:translateZ(-80px) scale(1.08)}
+.rain-near{opacity:.80;transform:translateZ(45px) scale(.92)}
+.rain-streak{position:absolute;top:-18vh;width:1px;border-radius:999px;transform:rotate(11deg);background:linear-gradient(180deg,transparent 0%,rgba(191,220,247,.12) 18%,rgba(176,213,243,.72) 78%,rgba(213,235,255,.95) 100%);box-shadow:0 0 5px rgba(139,190,237,.12);animation:rainFall linear infinite}
+.rain-mid .rain-streak{width:1.4px}
+.rain-near .rain-streak{width:2px;box-shadow:0 0 7px rgba(142,199,246,.18)}
+@keyframes rainFall{to{transform:translate3d(7vw,135vh,0) rotate(11deg)}}
+
+.rain-mist{position:absolute;inset:0;opacity:.0;background:radial-gradient(ellipse at 50% 76%,rgba(166,198,223,.12),transparent 42%),linear-gradient(180deg,transparent 35%,rgba(131,164,192,.08) 100%);mix-blend-mode:screen}
+.rain-splash{position:absolute;inset:0;opacity:0;background-image:radial-gradient(ellipse,rgba(196,225,247,.34) 0 1.2px,transparent 1.9px);background-size:160px 85px;animation:splashShift 1.8s steps(2) infinite}
+@keyframes splashShift{0%,100%{opacity:.08;transform:translateY(3px)}50%{opacity:.18;transform:translateY(-2px)}}
+
+body.day .sky-scene,body.night .sky-scene{opacity:1}
+body.night .sky-sun{opacity:0}
+body.night .sky-moon{opacity:.92}
+body.night .sky-stars{opacity:.64;animation:twinkle 7s ease-in-out infinite alternate}
+@keyframes twinkle{to{opacity:.82;transform:translateY(2px)}}
+body.clear .sky-cloud{opacity:.08}
+body.cloud .sky-cloud{opacity:.72}
+body.rain .sky-cloud{opacity:.72}
+body.snow .sky-cloud{opacity:.35}
+body.rain .sky-rain{opacity:1}
+body.rain .rain-mist{opacity:1}
+body.rain .rain-splash{opacity:.12}
+body.night.rain .sky-moon{opacity:.50}
+body.night.rain .sky-stars{opacity:.35}
+body.night.rain .sky-glow{opacity:.10}
+body.cloud .sky-glow{opacity:.20}
+body.snow .sky-rain{opacity:.55}
+body.snow .sky-rain:after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,rgba(242,248,255,.9) 0 2px,transparent 3px);background-size:58px 65px;animation:snowDrift 12s linear infinite;opacity:.58}
+@keyframes snowDrift{from{transform:translateY(-35px) translateX(0)}to{transform:translateY(105px) translateX(24px)}}
+body.rain:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background:linear-gradient(180deg,rgba(8,14,24,0),rgba(8,14,24,.05) 55%,rgba(8,14,24,.12));opacity:.85}
+@media(max-width:700px){.sky-sun{right:7vw;top:10vh;width:76px;height:76px}.sky-moon{right:8vw;top:9vh;width:62px;height:62px}.sky-cloud{width:250px;height:72px}.sky-cloud:before{width:92px;height:92px;left:30px;top:-39px}.sky-cloud:after{width:116px;height:116px;left:101px;top:-53px}}
+</style></head>
+<body class="clear day">
+<div class="sky-scene" aria-hidden="true">
+  <div class="sky-stars"></div>
+  <div class="sky-moon"></div>
+  <div class="sky-sun"></div>
+  <div class="sky-cloud cloud-a"></div>
+  <div class="sky-cloud cloud-b"></div>
+  <div class="sky-glow"></div>
+  <div class="sky-rain" id="skyRain">
+    <div class="rain-layer rain-far"></div>
+    <div class="rain-layer rain-mid"></div>
+    <div class="rain-layer rain-near"></div>
+    <div class="rain-mist"></div>
+    <div class="rain-splash"></div>
+  </div>
+</div>
+<header class="top"><a class="brand" href="#">Weather<span>.<i>IQ</i></span></a><div class="actions"><button class="btn" id="loc">⌖ Location</button><button class="btn" id="unit">°C / °F</button></div></header>
+
+<main class="page">
+<section class="heroHead">
+<div><p class="eyebrow">Weather intelligence</p><h1>Know your sky.</h1><p class="sub">Live conditions, hourly trends, air quality and a focused week-ahead view — built as a clean, responsive weather product.</p></div>
+<form class="search" id="search"><span>⌕</span><input id="q" placeholder="Search a city…" autocomplete="off"><button>Search</button><div class="suggestions" id="suggestions"></div></form>
+<p class="status" id="status">Loading live weather…</p>
+</section>
+
+<section class="grid">
+<article class="card current"><div class="icon" id="icon">☀</div><div class="place" id="place">New Delhi, India</div><div class="temp"><div class="deg" id="temp">--</div><div class="unit">°</div></div><div class="cond" id="cond">Loading…</div><div class="feels" id="feels">Feels like --°</div>
+<div class="meta4"><div><span>High</span><strong id="hi">--°</strong></div><div><span>Low</span><strong id="lo">--°</strong></div><div><span>Wind</span><strong id="wind">-- km/h</strong></div><div><span>Humidity</span><strong id="hum">--%</strong></div></div>
+<div class="sun"><div><span>Sunrise</span><strong id="rise">--:--</strong></div><div class="sunline"><b id="sunbar"></b></div><div><span>Sunset</span><strong id="set">--:--</strong></div></div></article>
+
+<article class="card insight"><div class="title"><span>Today at a glance</span><small id="updated">—</small></div><div class="stats"><div class="stat"><span>Pressure</span><strong id="pressure">--</strong></div><div class="stat"><span>Visibility</span><strong id="vis">--</strong></div><div class="stat"><span>UV Index</span><strong id="uv">--</strong></div><div class="stat"><span>Rain chance</span><strong id="rainChance">--</strong></div></div><div class="insightline"><b>✦</b><p id="tip">Fetching a weather insight…</p></div></article>
+</section>
+
+<section class="card section"><div class="secHead"><div><p class="eyebrow">Next 24 hours</p><h2>Hourly outlook</h2></div><small style="color:#747d8d;font-size:10px">Temperature trend</small></div><div class="chart"><canvas id="chart"></canvas></div><div class="strip" id="hours"></div></section>
+
+<section class="two">
+<article class="card section"><div class="secHead"><div><p class="eyebrow">The week ahead</p><h2>7-day forecast</h2></div></div><div class="forecast" id="forecast"></div></article>
+<article class="card section aq"><div class="secHead"><div><p class="eyebrow">Air quality</p><h2>Breathing report</h2></div><span class="btn" id="aqbadge">—</span></div><div class="aqtop"><div class="aqn" id="aqn">--</div><div><p id="aqlevel">Loading…</p><small>US AQI</small></div></div><div class="meter"><b id="aqmeter"></b></div><div class="poll"><div><span>PM2.5</span><strong id="pm25">--</strong><small>μg/m³</small></div><div><span>PM10</span><strong id="pm10">--</strong><small>μg/m³</small></div><div><span>NO₂</span><strong id="no2">--</strong><small>μg/m³</small></div><div><span>O₃</span><strong id="o3">--</strong><small>μg/m³</small></div></div></article>
+</section>
+
+<section class="card section"><div class="secHead"><div><p class="eyebrow">Weather details</p><h2>At a glance</h2></div></div><div class="detailGrid">
+<div class="detail"><span>Cloud cover</span><strong id="cloud">--</strong></div><div class="detail"><span>Dew point</span><strong id="dew">--</strong></div><div class="detail"><span>Wind direction</span><strong id="dir">--</strong></div><div class="detail"><span>Gusts</span><strong id="gust">--</strong></div><div class="detail"><span>Rain</span><strong id="rainNow">--</strong></div><div class="detail"><span>Snowfall</span><strong id="snow">--</strong></div>
+</div></section>
+
+<footer><span>Weather Intelligence Dashboard</span><span>Open-Meteo live data</span></footer>
+</main><div class="rain" id="rain"></div><script src="script.js"></script></body></html>
